@@ -1,3 +1,7 @@
+#!/usr/bin/env python3
+
+"""This module contains unit tests for the GithubOrgClient class."""
+
 import unittest
 from unittest.mock import MagicMock, patch
 
