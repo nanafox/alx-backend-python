@@ -43,3 +43,57 @@ class TestGithubOrgClient(unittest.TestCase):
                 github_client.GithubOrgClient("google")._public_repos_url,
                 "https://api.github.com/users/google/repos",
             )
+
+    @patch("client.get_json")
+    def test_public_repos(self, get_json):
+        """Test that the public_repos method returns the expected output."""
+        test_payload = {
+            'repos_url': "https://api.github.com/users/microsoft/repos",
+            'repos': [
+                {
+                    "id": 123456,
+                    "name": "vscode",
+                    "private": False,
+                    "owner": {
+                        "login": "microsoft",
+                        "id": 12345,
+                    },
+                    "fork": False,
+                    "url": "https://api.github.com/repos/microsoft/vscode",
+                    "created_at": "2015-01-01T00:00:00Z",
+                    "updated_at": "2020-01-01T00:00:00Z",
+                    "has_issues": True,
+                    "forks": 100,
+                    "default_branch": "main",
+                },
+                {
+                    "id": 789012,
+                    "name": "TypeScript",
+                    "private": False,
+                    "owner": {
+                        "login": "microsoft",
+                        "id": 12345,
+                    },
+                    "fork": False,
+                    "url": "https://api.github.com/repos/microsoft/TypeScript",
+                    "created_at": "2012-01-01T00:00:00Z",
+                    "updated_at": "2020-01-01T00:00:00Z",
+                    "has_issues": True,
+                    "forks": 200,
+                    "default_branch": "main",
+                },
+            ]
+        }
+
+        get_json.return_value = test_payload["repos"]
+        with patch(
+            "client.GithubOrgClient._public_repos_url",
+            new_callable=PropertyMock,
+        ) as mock_public_repos_url:
+            mock_public_repos_url.return_value = test_payload["repos_url"]
+            self.assertEqual(
+                github_client.GithubOrgClient("microsoft").public_repos(),
+                ["vscode", "TypeScript"],
+            )
+            mock_public_repos_url.assert_called_once()
+        get_json.assert_called_once()
